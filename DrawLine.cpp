@@ -2,7 +2,7 @@
 #include<vector>
 using namespace std;
 
-int SOTD = 102;
+int SOTD = 22;
 
 double Null = -99999999999.0;
 
@@ -49,7 +49,6 @@ int main()
 	{
 		pair<int,int> x;
 		cin>>x.first>>x.second;
-
 		Map.push_back(x);
 	}
 	//END TEMPLATE
