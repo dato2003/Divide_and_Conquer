@@ -2,7 +2,7 @@
 #include<vector>
 #include<cmath>
 using namespace std;
-int SOTD = 42;
+int SOTD = 22;
 //SIZE OF THE MAP MUST BE (X*2)+2.SO IF YOU WANT 9X9 SOTD = 20;MUST BE EVEN
 //FORMULA FOR THE SIZE; X IS YOUR DESIRED SIZE; (X*2)+2 = SOTD;
 
