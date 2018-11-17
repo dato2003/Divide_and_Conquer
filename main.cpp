@@ -1,8 +1,17 @@
 #include<iostream>
 #include<vector>
 #include<cmath>
+#include<queue>
+#include<algorithm>
 using namespace std;
-int SOTD = 22;
+
+const int SOTD = 22;
+
+vector< pair<int,int> > Map;
+
+
+char Display[SOTD][SOTD];
+priority_queue< pair<double,pair<int,int> > > Archive;
 //SIZE OF THE MAP MUST BE (X*2)+2.SO IF YOU WANT 9X9 SOTD = 20;MUST BE EVEN
 //FORMULA FOR THE SIZE; X IS YOUR DESIRED SIZE; (X*2)+2 = SOTD;
 
@@ -54,20 +63,57 @@ double GetDistance(pair<int,int> x1,pair<int,int> x2)
 
 	return distance;
 }
+void DrawLine(pair<double,double> Func,int MinX,int MaxX)
+{
+	for(int x = MinX+1 ;x < MaxX;x++)
+	{
+		if(Func.first != Null && Func.second != Null)
+		{
+			double y = Func.first * x + Func.second;
+			if(y > -1*(SOTD/2) && y < SOTD/2)
+			{
+				Display[SOTD/2 - (int)y][SOTD/2 + x] = '$';
+			}
+		}else
+		{
+			Display[SOTD/2-x][SOTD/2+Map[0].first] = '$';
+		}
+	}
+}
 double FindPoint(pair<int,int> x1,pair<double,double> Func)
 {
 	pair<double,double> RightFunc = calcRightAngle(x1,Func);
-	cout<<RightFunc.first<<" "<<RightFunc.second<<endl;
+	//cout<<RightFunc.first<<" "<<RightFunc.second<<endl;
 	pair<int,int> Inter = GetIntersectionPoint(RightFunc,Func);
-	cout<<Inter.first<<" "<<Inter.second<<endl;
+	//cout<<Inter.first<<" "<<Inter.second<<endl;
 	double distance = GetDistance(x1,Inter);
-	cout<<distance<<endl;
+	//cout<<distance<<endl;
 	return distance;
 }
+
+double area(pair<int,int> Point1, pair<int,int> Point2, pair<int,int> Point3) 
+{ 
+   return abs((Point1.first*(Point2.second-Point3.second) + 
+   			Point2.first*(Point3.second-Point1.second) + 
+			Point3.first*(Point1.second-Point2.second))/2.0); 
+}
+bool isInside(pair<int,int> Point1,pair<int,int> Point2, pair<int,int> Point3, pair<int,int> Point4) 
+{    
+   double A = area (Point1, Point2, Point3); 
+
+   double A1 = area (Point4, Point2, Point3);   
+   double A2 = area (Point1, Point4, Point3);    
+   double A3 = area (Point1, Point2, Point4); 
+
+   if(A1+A2+A3 == A)
+   {
+	return true;
+   }
+   return false;
+} 
+  
 int main()
 {
-	vector< pair<int,int> > Map;
-	char Display[SOTD][SOTD];
 	//SETTING UP THE BOARD
 
 	for(int i=0;i<SOTD;i++)
@@ -133,6 +179,7 @@ int main()
 		}
 		Map.push_back(x);
 	}
+	vector< pair<int,int> > Result = Map;
 	/*
 	cout<<MaxX.first.first<<":"<<MaxX.first.second<<" "<<MaxX.second<<endl;
 	cout<<MinX.first.first<<":"<<MinX.first.second<<" "<<MinX.second<<endl;
@@ -142,22 +189,16 @@ int main()
 
 	//STOP GETTING CORDINATES
 
+	//DRAW ALL POINTS
+	for(int i=0;i<n;i++)
+	{
+		Display[SOTD/2 - Map[i].second][SOTD/2 + Map[i].first] = '*';	
+	}
+	//END DRAW ALL POINTS
+
 	//DRAW LINE
 	pair<double,double> Func = calcFunc(Map[MaxX.second],Map[MinX.second]);
-	for(int x = MinX.first.first ;x <= MaxX.first.first;x++)
-	{
-		if(Func.first != Null && Func.second != Null)
-		{
-			double y = Func.first * x + Func.second;
-			if(y > -1*(SOTD/2) && y < SOTD/2)
-			{
-				Display[SOTD/2 - (int)y][SOTD/2 + x] = '*';
-			}
-		}else
-		{
-			Display[SOTD/2-x][SOTD/2+Map[0].first] = '*';
-		}
-	}
+	DrawLine(Func,MinX.first.first,MaxX.first.first);
 	//END DRAW LINE
 	
 	//CALCULATE
@@ -168,6 +209,7 @@ int main()
 		if(i != MaxX.second && i != MinX.second)
 		{
 			double distance = FindPoint(Map[i],Func);
+			Archive.push(make_pair(distance,Map[i]));
 			if(max < distance)
 			{
 				max = distance;	
@@ -176,25 +218,42 @@ int main()
 		}
 	}
 	cout<<"Dist:"<<max<<"||"<<Point.first<<":"<<Point.second<<endl;
-	//END CALCULATE
-
-	//DRAW ALL POINTS
-	for(int i=0;i<n;i++)
+	//cout<<isInside(MinX.first,MaxX.first,Point,Map[1])<<endl;
+	
+	while(!Archive.empty())
 	{
-		Display[SOTD/2 - Map[i].second][SOTD/2 + Map[i].first] = '*';	
+		Point = Archive.top().second;
+		cout<<"POINT:"<<Point.first<<":"<<Point.second<<endl;
+		for(int i=0;i<Map.size();i++)
+		{
+			if(i != MinX.second && i != MaxX.second && Map[i] != Point)
+			{	
+				if(isInside(MinX.first,MaxX.first,Point,Map[i]))
+				{
+					cout<<"		TARGET:"<<Map[i].first<<":"<<Map[i].second<<endl;
+					Result.erase(remove(Result.begin(), Result.end(), Map[i]), Result.end());
+				}
+			}
+		}
+		Archive.pop();
 	}
-	//END DRAW ALL POINTS
+	for(int i=0;i<Result.size();i++)
+	{
+		cout<<Result[i].first<<":"<<Result[i].second<<endl;
+	}
+	//END CALCULATE
 
 	//DISPLAY
 	for(int i=0;i<SOTD;i++)
 	{
 		for(int j=0;j<SOTD;j++)
 		{
-			if(Display[i][j] == '*' || Display[i][j] == '#' || Display[i][j] == '-' || Display[i][j] == '|')
+			if(Display[i][j] == NULL)
+			{
+				cout<<" ";
+			}else
 			{
 				cout<<Display[i][j];
-			}else{
-				cout<<" ";
 			}
 		}
 		cout<<endl;
